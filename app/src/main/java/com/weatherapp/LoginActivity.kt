@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.weatherapp.ui.theme.WeatherAppTheme
 import android.app.Activity
-import android.widget.Toast
+import android.content.Intent
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.*
@@ -69,7 +69,12 @@ fun LoginPage(modifier: Modifier = Modifier) {
         Row(modifier = modifier) {
             Button(
                 onClick = {
-                    Toast.makeText(activity, "Login OK!", Toast.LENGTH_LONG).show()
+                    activity?.startActivity(
+                        Intent(activity, MainActivity::class.java).setFlags(
+                            Intent.FLAG_ACTIVITY_SINGLE_TOP
+                        )
+                    )
+
                 },
                 enabled = email.isNotEmpty() && password.isNotEmpty()
             ) {
