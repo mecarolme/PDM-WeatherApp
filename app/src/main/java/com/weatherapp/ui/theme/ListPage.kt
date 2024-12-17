@@ -22,17 +22,21 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.IconButton
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.platform.LocalContext
+import com.weatherapp.ui.model.City
+import com.weatherapp.ui.nav.MainViewModel
 
 @Preview(showBackground = true)
 @Composable
-fun ListPage(modifier: Modifier = Modifier) {
+fun ListPage(
+    modifier: Modifier = Modifier,
+    viewModel: MainViewModel = MainViewModel()
+) {
     val activity = LocalContext.current as? Activity
-    val cityList = remember { getCities().toMutableStateList() }
+    val cityList = viewModel.cities
+
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -40,22 +44,12 @@ fun ListPage(modifier: Modifier = Modifier) {
     ) {
         items(cityList) { city ->
             CityItem(city = city, onClose = {
-                Toast.makeText(activity, "Close!", Toast.LENGTH_LONG).show()
+                viewModel.remove(city)
             }, onClick = {
                 Toast.makeText(activity, "Click!", Toast.LENGTH_LONG).show()
             })
         }
     }
-}
-
-data class City (
-    val name : String,
-    val weather: String? = null,
-    val location: String? = null
-)
-
-private fun getCities() = List(20) { i ->
-    City(name = "Cidade $i", weather = "Carregando clima...")
 }
 
 @Composable
