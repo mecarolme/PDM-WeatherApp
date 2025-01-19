@@ -28,11 +28,10 @@ import androidx.compose.ui.platform.LocalContext
 import com.weatherapp.ui.model.City
 import com.weatherapp.ui.nav.MainViewModel
 
-@Preview(showBackground = true)
 @Composable
 fun ListPage(
     modifier: Modifier = Modifier,
-    viewModel: MainViewModel = MainViewModel()
+    viewModel: MainViewModel
 ) {
     val activity = LocalContext.current as? Activity
     val cityList = viewModel.cities

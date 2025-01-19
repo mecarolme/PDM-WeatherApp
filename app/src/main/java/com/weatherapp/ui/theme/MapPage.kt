@@ -21,12 +21,10 @@ import androidx.core.content.ContextCompat
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 
-
-@Preview(showBackground = true)
 @Composable
 fun MapPage(
     modifier: Modifier = Modifier,
-    viewModel: MainViewModel = MainViewModel()
+    viewModel: MainViewModel
 ) {
     val context = LocalContext.current
     val hasLocationPermission by remember {
@@ -44,7 +42,7 @@ fun MapPage(
     val camPosState = rememberCameraPositionState ()
 
     GoogleMap (modifier = Modifier.fillMaxSize(),
-        onMapClick = { viewModel.add("Nova cidade", location = it) },
+        onMapClick = { viewModel.add("Cidade@${it.latitude}:${it.longitude}", location = it) },
         cameraPositionState = camPosState,
         properties = MapProperties(isMyLocationEnabled = hasLocationPermission),
         uiSettings = MapUiSettings(myLocationButtonEnabled = true)

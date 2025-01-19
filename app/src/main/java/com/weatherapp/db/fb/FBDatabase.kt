@@ -15,6 +15,7 @@ class FBDatabase {
         fun onCityUpdate(city: City)
         fun onCityRemoved(city: City)
     }
+
     private val auth = Firebase.auth
     private val db = Firebase.firestore
     private var citiesListReg: ListenerRegistration? = null
