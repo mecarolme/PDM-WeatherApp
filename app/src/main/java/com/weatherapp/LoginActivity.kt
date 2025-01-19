@@ -13,6 +13,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.weatherapp.ui.theme.WeatherAppTheme
 import android.app.Activity
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NO_HISTORY
+import android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.*
@@ -23,6 +25,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.material3.*
 import androidx.compose.ui.Alignment
+import android.widget.Toast
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
+
 
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -69,12 +75,23 @@ fun LoginPage(modifier: Modifier = Modifier) {
         Row(modifier = modifier) {
             Button(
                 onClick = {
-                    activity?.startActivity(
-                        Intent(activity, MainActivity::class.java).setFlags(
-                            Intent.FLAG_ACTIVITY_SINGLE_TOP
-                        )
-                    )
-
+                    if (email.isNotEmpty() && password.isNotEmpty()) {
+                        Firebase.auth.signInWithEmailAndPassword(email, password)
+                            .addOnCompleteListener(activity!!) { task ->
+                                if (task.isSuccessful) {
+                                    activity.startActivity(
+                                        Intent(activity, MainActivity::class.java).setFlags(
+                                            Intent.FLAG_ACTIVITY_SINGLE_TOP
+                                        )
+                                    )
+                                    Toast.makeText(activity, "Login OK!", Toast.LENGTH_LONG).show()
+                                } else {
+                                    Toast.makeText(activity, "Login FALHOU!", Toast.LENGTH_LONG).show()
+                                }
+                            }
+                    } else {
+                        Toast.makeText(activity, "Preencha todos os campos!", Toast.LENGTH_LONG).show()
+                    }
                 },
                 enabled = email.isNotEmpty() && password.isNotEmpty()
             ) {
@@ -85,7 +102,7 @@ fun LoginPage(modifier: Modifier = Modifier) {
                 onClick = {
                     activity?.startActivity(
                         Intent(activity, RegisterActivity::class.java).setFlags(
-                            Intent.FLAG_ACTIVITY_SINGLE_TOP
+                            FLAG_ACTIVITY_SINGLE_TOP or FLAG_ACTIVITY_NO_HISTORY
                         )
                     )
                 }
