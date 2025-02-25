@@ -35,8 +35,6 @@ fun MapPage(
         )
     }
 
-    val recife = LatLng(-8.05, -34.9)
-
     val camPosState = rememberCameraPositionState()
 
     GoogleMap(
@@ -48,19 +46,16 @@ fun MapPage(
         properties = MapProperties(isMyLocationEnabled = hasLocationPermission),
         uiSettings = MapUiSettings(myLocationButtonEnabled = true)
     ) {
-        Marker(
-            state = MarkerState(position = recife),
-            title = "Recife",
-            snippet = "Marcador em Recife",
-            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)
-        )
+        viewModel.cities.forEach { city ->
+            city.location?.let { location ->
+                if (city.weather == null) {
+                    viewModel.loadWeather(city)
+                }
 
-        viewModel.cities.forEach {
-            if (it.location != null) {
                 Marker(
-                    state = MarkerState(position = it.location),
-                    title = it.name,
-                    snippet = "${it.location}"
+                    state = MarkerState(position = location),
+                    title = city.name,
+                    snippet = city.weather?.desc ?: "Carregando..."
                 )
             }
         }

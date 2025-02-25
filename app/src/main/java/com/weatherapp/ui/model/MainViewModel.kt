@@ -1,19 +1,20 @@
 package com.weatherapp.ui.model
 
-import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.maps.model.LatLng
 import com.weatherapp.api.WeatherService
 import com.weatherapp.db.fb.FBDatabase
 
-class MainViewModel (private val db: FBDatabase,
-                     private val service : WeatherService
-): ViewModel(), FBDatabase.Listener {
+class MainViewModel(
+    private val db: FBDatabase,
+    private val service: WeatherService
+) : ViewModel(), FBDatabase.Listener {
 
-    private val _cities = mutableStateListOf<City>()
-    val cities
-        get() = _cities.toList()
+    private val _cities = mutableStateMapOf<String, City>()
+    val cities: List<City>
+        get() = _cities.values.toList()
 
     private val _user = mutableStateOf<User?>(null)
     val user: User?
@@ -25,16 +26,16 @@ class MainViewModel (private val db: FBDatabase,
 
     fun remove(city: City) {
         db.remove(city)
-        _cities.remove(city)
+        _cities.remove(city.name)
     }
 
     fun add(name: String) {
         service.getLocation(name) { lat, lng ->
             if (lat != null && lng != null) {
                 val newCity = City(name = name, location = LatLng(lat, lng))
-                if (_cities.none { it.name == newCity.name }) {
+                if (!_cities.containsKey(newCity.name)) {
                     db.add(newCity)
-                    _cities.add(newCity)
+                    _cities[newCity.name] = newCity
                 }
             }
         }
@@ -44,11 +45,26 @@ class MainViewModel (private val db: FBDatabase,
         service.getName(location.latitude, location.longitude) { name ->
             if (name != null) {
                 val newCity = City(name = name, location = location)
-                if (_cities.none { it.name == newCity.name }) {
+                if (!_cities.containsKey(newCity.name)) {
                     db.add(newCity)
-                    _cities.add(newCity)
+                    _cities[newCity.name] = newCity
                 }
             }
+        }
+    }
+
+    fun loadWeather(city: City) {
+        service.getCurrentWeather(city.name) { apiWeather ->
+            val updatedCity = city.copy(
+                weather = Weather(
+                    date = apiWeather?.current?.last_updated ?: "...",
+                    desc = apiWeather?.current?.condition?.text ?: "...",
+                    temp = apiWeather?.current?.temp_c ?: -1.0,
+                    imgUrl = "https:" + (apiWeather?.current?.condition?.icon ?: "")
+                )
+            )
+
+            _cities[city.name] = updatedCity
         }
     }
 
@@ -57,25 +73,14 @@ class MainViewModel (private val db: FBDatabase,
     }
 
     override fun onCityAdded(city: City) {
-        if (_cities.none { it.name == city.name }) {
-            _cities.add(city)
-        }
+        _cities[city.name] = city
     }
 
     override fun onCityUpdate(city: City) {
-        val index = _cities.indexOfFirst { it.name == city.name }
-        if (index != -1) {
-            _cities[index] = city
-        }
+        _cities[city.name] = city.copy()
     }
 
     override fun onCityRemoved(city: City) {
-        _cities.remove(city)
-    }
-}
-
-private fun generateCities(): List<City> {
-    return List(20) { i ->
-        City(name = "Cidade $i", weather = "Carregando clima...")
+        _cities.remove(city.name)
     }
 }

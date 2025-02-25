@@ -32,19 +32,27 @@ class WeatherService {
         }
 
         val call: Call<List<APILocation>?> = weatherAPI.search(query = query)
-        call.enqueue(object : Callback<List<APILocation>?> {
-            override fun onResponse(
-                call: Call<List<APILocation>?>,
-                response: Response<List<APILocation>?>
-            ) {
-                onResponse(response.body()?.let { if (it.isNotEmpty()) it[0] else null })
-            }
+        enqueue(call) { response ->
+            onResponse(response?.firstOrNull())
+        }
+    }
 
-            override fun onFailure(call: Call<List<APILocation>?>, t: Throwable) {
-                Log.w("WeatherApp WARNING", t.message ?: "Unknown error")
-                onResponse(null)
+    private fun <T> enqueue(call : Call<T?>, onResponse : ((T?) -> Unit)? = null){
+        call.enqueue(object : Callback<T?> {
+            override fun onResponse(call: Call<T?>, response: Response<T?>) {
+                val obj: T? = response.body()
+                onResponse?.invoke(obj)
+            }
+            override fun onFailure(call: Call<T?>, t: Throwable) {
+                Log.w("WeatherApp WARNING", "" + t.message)
             }
         })
     }
+
+    fun getCurrentWeather(name: String, onResponse: (APICurrentWeather?) -> Unit){
+        val call: Call<APICurrentWeather?> = weatherAPI.currentWeather(name)
+        enqueue(call) { onResponse.invoke(it) }
+    }
+
 
 }
