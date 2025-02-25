@@ -4,12 +4,14 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.maps.model.LatLng
+import com.weatherapp.api.WeatherService
 import com.weatherapp.db.fb.FBDatabase
 import com.weatherapp.ui.model.City
 import com.weatherapp.ui.model.User
 
-class MainViewModel (private val db: FBDatabase): ViewModel(),
-    FBDatabase.Listener {
+class MainViewModel (private val db: FBDatabase,
+                     private val service : WeatherService): ViewModel(), FBDatabase.Listener {
+
     private val _cities = mutableStateListOf<City>()
     val cities
         get() = _cities.toList()
@@ -27,11 +29,27 @@ class MainViewModel (private val db: FBDatabase): ViewModel(),
         _cities.remove(city)
     }
 
-    fun add(name: String, location: LatLng? = null) {
-        val newCity = City(name = name, location = location)
-        if (_cities.none { it.name == newCity.name }) {
-            db.add(newCity)
-            _cities.add(newCity)
+    fun add(name: String) {
+        service.getLocation(name) { lat, lng ->
+            if (lat != null && lng != null) {
+                val newCity = City(name = name, location = LatLng(lat, lng))
+                if (_cities.none { it.name == newCity.name }) {
+                    db.add(newCity)
+                    _cities.add(newCity)
+                }
+            }
+        }
+    }
+
+    fun add(location: LatLng) {
+        service.getName(location.latitude, location.longitude) { name ->
+            if (name != null) {
+                val newCity = City(name = name, location = location)
+                if (_cities.none { it.name == newCity.name }) {
+                    db.add(newCity)
+                    _cities.add(newCity)
+                }
+            }
         }
     }
 
