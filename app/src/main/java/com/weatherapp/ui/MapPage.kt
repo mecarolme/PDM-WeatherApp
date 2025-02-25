@@ -17,8 +17,12 @@ import android.content.pm.PackageManager
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getDrawable
+import androidx.core.graphics.drawable.toBitmap
+import androidx.core.graphics.scale
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
+import com.weatherapp.R
 
 @Composable
 fun MapPage(
@@ -47,15 +51,25 @@ fun MapPage(
         uiSettings = MapUiSettings(myLocationButtonEnabled = true)
     ) {
         viewModel.cities.forEach { city ->
-            city.location?.let { location ->
+            if (city.location != null) {
+                val drawable = getDrawable(context, R.drawable.loading)
+                val bitmap = drawable?.toBitmap(300, 200)
+                var marker = if (bitmap != null)
+                    BitmapDescriptorFactory.fromBitmap(bitmap)
+                else BitmapDescriptorFactory.defaultMarker()
                 if (city.weather == null) {
                     viewModel.loadWeather(city)
+                } else if (city.weather!!.bitmap == null) {
+                    viewModel.loadBitmap(city)
+                } else {
+                    marker = BitmapDescriptorFactory
+                        .fromBitmap(city.weather!!.bitmap!!.scale(150, 150))
                 }
-
                 Marker(
-                    state = MarkerState(position = location),
+                    state = MarkerState(position = city.location),
+                    icon = marker,
                     title = city.name,
-                    snippet = city.weather?.desc ?: "Carregando..."
+                    snippet = city.weather?.desc?:"carregando..."
                 )
             }
         }

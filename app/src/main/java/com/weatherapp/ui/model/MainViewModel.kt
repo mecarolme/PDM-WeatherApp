@@ -90,6 +90,13 @@ class MainViewModel(
         }
     }
 
+    fun loadBitmap(city: City) {
+        service.getBitmap(city.weather!!.imgUrl) { bitmap ->
+            city.weather!!.bitmap = bitmap
+            onCityUpdate(city)
+        }
+    }
+
     override fun onUserLoaded(user: User) {
         _user.value = user
     }
@@ -115,4 +122,5 @@ class MainViewModel(
     var page: Route
         get() = _page.value
         set(tmp) { _page.value = tmp }
+
 }
