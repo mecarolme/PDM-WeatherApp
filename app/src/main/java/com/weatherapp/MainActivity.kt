@@ -25,7 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
-import com.weatherapp.ui.nav.MainViewModel
+import com.weatherapp.ui.model.MainViewModel
 import androidx.activity.viewModels
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
@@ -40,7 +40,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.weatherapp.api.WeatherService
 import com.weatherapp.db.fb.FBDatabase
-import com.weatherapp.ui.nav.MainViewModelFactory
+import com.weatherapp.ui.model.MainViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 

@@ -1,4 +1,4 @@
-package com.weatherapp.ui.theme
+package com.weatherapp.ui
 
 import android.app.Activity
 import androidx.compose.foundation.background
@@ -14,10 +14,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.weatherapp.R
-import com.weatherapp.ui.nav.MainViewModel
+import com.weatherapp.ui.model.MainViewModel
 
 @Composable
 fun HomePage(

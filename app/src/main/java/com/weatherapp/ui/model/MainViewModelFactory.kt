@@ -1,4 +1,4 @@
-package com.weatherapp.ui.nav
+package com.weatherapp.ui.model
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

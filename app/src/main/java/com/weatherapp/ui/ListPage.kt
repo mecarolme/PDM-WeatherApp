@@ -1,4 +1,4 @@
-package com.weatherapp.ui.theme
+package com.weatherapp.ui
 
 import android.app.Activity
 import android.widget.Toast
@@ -25,7 +25,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.platform.LocalContext
 import com.weatherapp.ui.model.City
-import com.weatherapp.ui.nav.MainViewModel
+import com.weatherapp.ui.model.MainViewModel
 
 @Composable
 fun ListPage(
