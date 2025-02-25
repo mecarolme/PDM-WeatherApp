@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import com.google.android.gms.maps.model.LatLng
 import com.weatherapp.api.WeatherService
 import com.weatherapp.db.fb.FBDatabase
+import com.weatherapp.ui.nav.Route
 
 class MainViewModel(
     private val db: FBDatabase,
@@ -109,4 +110,9 @@ class MainViewModel(
     override fun onCityRemoved(city: City) {
         _cities.remove(city.name)
     }
+
+    private var _page = mutableStateOf<Route>(Route.Home)
+    var page: Route
+        get() = _page.value
+        set(tmp) { _page.value = tmp }
 }

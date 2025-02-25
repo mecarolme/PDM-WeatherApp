@@ -26,6 +26,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.platform.LocalContext
 import com.weatherapp.ui.model.City
 import com.weatherapp.ui.model.MainViewModel
+import com.weatherapp.ui.nav.Route
 
 @Composable
 fun ListPage(
@@ -49,6 +50,7 @@ fun ListPage(
                 viewModel.remove(city)
             }, onClick = {
                 viewModel.city = city
+                viewModel.page = Route.Home
             })
         }
     }
