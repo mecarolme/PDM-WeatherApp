@@ -6,12 +6,14 @@ import androidx.lifecycle.ViewModel
 import com.google.android.gms.maps.model.LatLng
 import com.weatherapp.api.WeatherService
 import com.weatherapp.db.fb.FBDatabase
+import com.weatherapp.monitor.ForecastMonitor
 import com.weatherapp.ui.nav.Route
 import kotlin.random.Random
 
 class MainViewModel(
     private val db: FBDatabase,
-    private val service: WeatherService
+    private val service: WeatherService,
+    private val monitor: ForecastMonitor
 ) : ViewModel(), FBDatabase.Listener {
 
     private val _cities = mutableStateMapOf<String, City>()
@@ -61,17 +63,9 @@ class MainViewModel(
     }
 
     fun update(city: City) {
-        val oldCity = _cities[city.name]
         db.update(city)
-
-        _cities[city.name] = city.copy(
-            weather = oldCity?.weather,
-            forecast = oldCity?.forecast
-        )
-
-        if (_city.value?.name == city.name) {
-            _city.value = _cities[city.name]
-        }
+        refresh(city)
+        monitor.updateCity(city)
     }
 
     fun loadWeather(city: City) {
@@ -85,7 +79,8 @@ class MainViewModel(
                 )
             )
 
-            _cities[city.name] = updatedCity
+            refresh(updatedCity)
+            monitor.updateCity(updatedCity)
         }
     }
 
@@ -100,8 +95,9 @@ class MainViewModel(
                     imgUrl = ("https:" + it.day?.condition?.icon)
                 )
             }
-            _cities.remove(city.name)
-            _cities[city.name] = city.copy()
+
+            refresh(city)
+            monitor.updateCity(city)
         }
     }
 
@@ -121,20 +117,29 @@ class MainViewModel(
     }
 
     override fun onCityUpdate(city: City) {
-        val oldCity = _cities[city.name]
-
-        _cities[city.name] = city.copy(
-            weather = oldCity?.weather ?: city.weather,
-            forecast = oldCity?.forecast ?: city.forecast
-        )
-
-        if (_city.value?.name == city.name) {
-            _city.value = _cities[city.name]
-        }
+        refresh(city)
+        monitor.updateCity(city)
     }
 
     override fun onCityRemoved(city: City) {
         _cities.remove(city.name)
+
+        if (_city.value?.name == city.name) {
+            _city.value = null
+        }
+
+        monitor.cancelCity(city)
+    }
+
+    private fun refresh(city: City) {
+        val copy = city.copy(
+            salt = Random.nextLong(),
+            weather = city.weather?:_cities[city.name]?.weather,
+            forecast = city.forecast?:_cities[city.name]?.forecast
+        )
+        if (_city.value?.name == city.name) _city.value = copy
+        _cities.remove(city.name)
+        _cities[city.name] = copy
     }
 
     private var _page = mutableStateOf<Route>(Route.Home)
@@ -143,6 +148,7 @@ class MainViewModel(
         set(tmp) { _page.value = tmp }
 
     override fun onUserSignOut() {
+        monitor.cancelAll()
         _user.value = null
         _cities.clear()
     }
