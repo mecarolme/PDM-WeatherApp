@@ -23,6 +23,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.material3.IconButton
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import coil.compose.AsyncImage
@@ -85,6 +87,18 @@ fun CityItem(
                 text = city.weather?.desc?:"carregando...",
                 fontSize = 16.sp)
         }
+
+        val isMonitored = city.isMonitored
+        val icon = if (isMonitored)  Icons.Filled.Notifications else Icons.Outlined.Notifications
+
+        Icon(
+            imageVector = icon,
+            contentDescription = "Monitorada?",
+            modifier = Modifier
+                .size(32.dp)
+                .padding(start = 8.dp)
+        )
+        
         IconButton(onClick = onClose) {
             Icon(Icons.Filled.Close, contentDescription = "Close")
         }

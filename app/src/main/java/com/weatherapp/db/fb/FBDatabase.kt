@@ -14,6 +14,7 @@ class FBDatabase {
         fun onCityAdded(city: City)
         fun onCityUpdate(city: City)
         fun onCityRemoved(city: City)
+        fun onUserSignOut()
     }
 
     private val auth = Firebase.auth
@@ -25,6 +26,7 @@ class FBDatabase {
         auth.addAuthStateListener { auth ->
             if (auth.currentUser == null) {
                 citiesListReg?.remove()
+                listener?.onUserSignOut()
                 return@addAuthStateListener
             }
             val refCurrUser = db.collection("users")
@@ -39,6 +41,16 @@ class FBDatabase {
                     if (ex != null) return@addSnapshotListener
                     snapshots?.documentChanges?.forEach { change ->
                         val fbCity = change.document.toObject(FBCity::class.java)
+
+                        when (change.type) {
+                            DocumentChange.Type.ADDED ->
+                                listener?.onCityAdded(fbCity.toCity())
+                            DocumentChange.Type.MODIFIED ->
+                                listener?.onCityUpdate(fbCity.toCity())
+                            DocumentChange.Type.REMOVED ->
+                                listener?.onCityRemoved(fbCity.toCity())
+                        }
+
                         if (change.type == DocumentChange.Type.ADDED) {
                             listener?.onCityAdded(fbCity.toCity())
                         } else if (change.type == DocumentChange.Type.REMOVED) {
@@ -66,6 +78,16 @@ class FBDatabase {
         val uid = auth.currentUser!!.uid
         db.collection("users").document(uid).collection("cities")
             .document(city.name).set(city.toFBCity())
+    }
+
+    fun update(city: City) {
+        if (auth.currentUser == null) throw RuntimeException("Not logged in!")
+        val uid = auth.currentUser!!.uid
+        val fbCity = city.toFBCity()
+        val changes = mapOf( "lat" to fbCity.lat, "lng" to fbCity.lng,
+            "monitored" to fbCity.monitored )
+        db.collection("users").document(uid)
+            .collection("cities").document(fbCity.name!!).update(changes)
     }
 
     fun remove(city: City) {

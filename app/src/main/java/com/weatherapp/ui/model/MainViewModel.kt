@@ -7,6 +7,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.weatherapp.api.WeatherService
 import com.weatherapp.db.fb.FBDatabase
 import com.weatherapp.ui.nav.Route
+import kotlin.random.Random
 
 class MainViewModel(
     private val db: FBDatabase,
@@ -20,7 +21,7 @@ class MainViewModel(
     private var _city = mutableStateOf<City?>(null)
     var city: City?
         get() = _city.value
-        set(tmp) { _city = mutableStateOf(tmp?.copy()) }
+        set(tmp) { _city.value = tmp?.copy(salt = Random.nextLong()) }
 
     private val _user = mutableStateOf<User?>(null)
     val user: User?
@@ -56,6 +57,20 @@ class MainViewModel(
                     _cities[newCity.name] = newCity
                 }
             }
+        }
+    }
+
+    fun update(city: City) {
+        val oldCity = _cities[city.name]
+        db.update(city)
+
+        _cities[city.name] = city.copy(
+            weather = oldCity?.weather,
+            forecast = oldCity?.forecast
+        )
+
+        if (_city.value?.name == city.name) {
+            _city.value = _cities[city.name]
         }
     }
 
@@ -106,11 +121,15 @@ class MainViewModel(
     }
 
     override fun onCityUpdate(city: City) {
-        _cities.remove(city.name)
-        _cities[city.name] = city.copy()
+        val oldCity = _cities[city.name]
+
+        _cities[city.name] = city.copy(
+            weather = oldCity?.weather ?: city.weather,
+            forecast = oldCity?.forecast ?: city.forecast
+        )
 
         if (_city.value?.name == city.name) {
-            _city.value = city.copy()
+            _city.value = _cities[city.name]
         }
     }
 
@@ -123,4 +142,8 @@ class MainViewModel(
         get() = _page.value
         set(tmp) { _page.value = tmp }
 
+    override fun onUserSignOut() {
+        _user.value = null
+        _cities.clear()
+    }
 }
